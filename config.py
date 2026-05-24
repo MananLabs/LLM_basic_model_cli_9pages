@@ -17,19 +17,19 @@ METADATA_PATH = os.path.join(INDEX_DIR, "metadata.npy")
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
 # Chunking parameters
-CHUNK_SIZE = 512
-CHUNK_OVERLAP = 64
+CHUNK_SIZE = 1024  # Larger chunks = more complete context per retrieval
+CHUNK_OVERLAP = 128  # More overlap = less chance of splitting key info
 
 # Retrieval parameters
-TOP_K = 5
-CONFIDENCE_THRESHOLD = 0.25
+TOP_K = 3  # Fewer but more relevant chunks = less noise for the LLM
+CONFIDENCE_THRESHOLD = 0.30  # Slightly stricter = fewer bad retrievals
 
 # Ollama / LLM settings
 OLLAMA_MODEL = "qwen3:1.7b"
-OLLAMA_TIMEOUT = 120  # seconds
-LLM_TEMPERATURE = 0.3
-LLM_MAX_TOKENS = 512
-LLM_TOP_P = 0.9
+OLLAMA_TIMEOUT = 180  # seconds (more time for CPU inference)
+LLM_TEMPERATURE = 0.1  # Lower = more deterministic/factual answers
+LLM_MAX_TOKENS = 384  # Shorter output = faster generation on CPU
+LLM_TOP_P = 0.85  # Tighter sampling = less hallucination
 
 # Domain keywords for relevance filtering
 DOMAIN_KEYWORDS = [

@@ -13,7 +13,7 @@ from config import (
     EMBEDDING_MODEL, INDEX_DIR, CHUNKS_PATH,
     FAISS_INDEX_PATH, METADATA_PATH, CHUNK_SIZE, CHUNK_OVERLAP
 )
-from pdf_extractor import extract_text_from_pdf, chunk_text
+from json_extractor import extract_text_from_json, chunk_text
 
 
 def build_index():
@@ -21,11 +21,11 @@ def build_index():
     Full pipeline: extract PDF -> chunk -> embed -> build FAISS index.
     Saves index and metadata to disk.
     """
-    # Step 1: Extract text
+    # Step 1: Extract text from JSON
     print("=" * 60)
-    print("STEP 1: Extracting text from PDF")
+    print("STEP 1: Extracting text from JSON")
     print("=" * 60)
-    pages = extract_text_from_pdf()
+    pages = extract_text_from_json()
 
     # Step 2: Chunk text
     print("\n" + "=" * 60)

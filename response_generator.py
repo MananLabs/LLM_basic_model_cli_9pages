@@ -12,18 +12,15 @@ from config import (
     LLM_TEMPERATURE, LLM_MAX_TOKENS, LLM_TOP_P,
 )
 
-SYSTEM_PROMPT = """You are a closed-domain engineering assistant. You answer questions ONLY using the provided textbook context below.
+SYSTEM_PROMPT = """You are a power electronics textbook assistant. Answer ONLY from the CONTEXT provided. Be concise and technical.
 
-STRICT RULES:
-1. Use ONLY the information in the CONTEXT section to answer.
-2. NEVER use outside knowledge, prior training data, or general knowledge.
-3. NEVER invent formulas, equations, values, or citations not present in the context.
-4. If the context does not contain enough information to answer, respond EXACTLY with: "The provided textbook data does not contain enough information to answer this question."
-5. Keep answers concise, technical, and grounded.
-6. Do NOT speculate or extrapolate beyond what the context states.
-7. Reference page numbers from the context when relevant.
+RULES:
+1. Use ONLY the CONTEXT below. No outside knowledge.
+2. If context is insufficient, say: "The textbook data does not cover this."
+3. Cite page numbers. Keep answers short and factual.
+4. Do NOT speculate or add information not in the context.
 
-You are answering from: "Fundamentals of Power Electronics" by Erickson & Maksimovic (2nd Edition, 2001)."""
+/no_think"""
 
 NO_CONTEXT_RESPONSE = "The provided textbook data does not contain enough information to answer this question."
 
@@ -31,10 +28,9 @@ NO_CONTEXT_RESPONSE = "The provided textbook data does not contain enough inform
 def build_prompt(query, context):
     """Build the user message with retrieved context injected."""
     return (
-        f"CONTEXT (from textbook):\n"
-        f"---\n{context}\n---\n\n"
+        f"CONTEXT:\n{context}\n\n"
         f"QUESTION: {query}\n\n"
-        f"Answer using ONLY the context above. Cite page numbers where applicable."
+        f"Answer concisely from the context. Cite page numbers."
     )
 
 
