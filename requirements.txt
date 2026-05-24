@@ -1,0 +1,8 @@
+pymupdf
+easyocr
+sentence-transformers==2.7.0
+faiss-cpu==1.13.2
+torch>=2.0.0
+numpy>=1.24.0
+tqdm==4.66.1
+Pillow
