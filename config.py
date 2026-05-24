@@ -1,5 +1,6 @@
 """
 Configuration for the Engineering Knowledge Intelligence System.
+Closed-domain RAG with Ollama + Qwen3 1.7B.
 """
 
 import os
@@ -16,11 +17,19 @@ METADATA_PATH = os.path.join(INDEX_DIR, "metadata.npy")
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
 # Chunking parameters
-CHUNK_SIZE = 512  # characters per chunk
-CHUNK_OVERLAP = 64  # overlap between chunks
+CHUNK_SIZE = 512
+CHUNK_OVERLAP = 64
 
 # Retrieval parameters
-TOP_K = 5  # number of chunks to retrieve per query
+TOP_K = 5
+CONFIDENCE_THRESHOLD = 0.25
+
+# Ollama / LLM settings
+OLLAMA_MODEL = "qwen3:1.7b"
+OLLAMA_TIMEOUT = 120  # seconds
+LLM_TEMPERATURE = 0.3
+LLM_MAX_TOKENS = 512
+LLM_TOP_P = 0.9
 
 # Domain keywords for relevance filtering
 DOMAIN_KEYWORDS = [
