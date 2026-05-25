@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power Electronics AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #212121;
+            --bg-secondary: #171717;
+            --bg-chat: #2f2f2f;
+            --text-primary: #ececec;
+            --text-secondary: #b4b4b4;
+            --text-muted: #8e8e8e;
+            --accent: #10a37f;
+            --accent-hover: #0d8c6d;
+            --border: #424242;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-secondary);
+        }
+
+        .header h1 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .header .model-badge {
+            margin-left: 10px;
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            background: var(--bg-chat);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        /* Chat Area */
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 0;
+            scroll-behavior: smooth;
+        }
+
+        .chat-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .message-wrapper {
+            max-width: 768px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .message {
+            padding: 18px 0;
+            display: flex;
+            gap: 16px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .message-avatar.user {
+            background: #5436da;
+            color: white;
+        }
+
+        .message-avatar.assistant {
+            background: var(--accent);
+            color: white;
+        }
+
+        .message-content {
+            flex: 1;
+            line-height: 1.75;
+            font-size: 15px;
+            overflow-wrap: break-word;
+        }
+
+        .message-content p {
+            margin-bottom: 12px;
+        }
+
+        .message-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Sources */
+        .sources {
+            margin-top: 14px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .sources-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-right: 4px;
+        }
+
+        .source-badge {
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            background: rgba(16, 163, 127, 0.12);
+            color: var(--accent);
+            border: 1px solid rgba(16, 163, 127, 0.25);
+        }
+
+        .meta-info {
+            margin-top: 8px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Loading */
+        .loading-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+        }
+
+        .loading-spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 13px;
+            color: var(--text-muted);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        /* Welcome */
+        .welcome {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .welcome-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .welcome h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .welcome p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            max-width: 480px;
+            margin-bottom: 36px;
+            line-height: 1.6;
+        }
+
+        /* Suggestion chips */
+        .suggestions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .suggestion-chip {
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: var(--bg-secondary);
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .suggestion-chip:hover {
+            border-color: var(--accent);
+            background: var(--bg-chat);
+            color: var(--text-primary);
+        }
+
+        .chip-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+
+        .chip-text {
+            font-size: 12px;
+        }
+
+        /* Input */
+        .input-area {
+            padding: 16px 20px 24px;
+            background: var(--bg-primary);
+        }
+
+        .input-wrapper {
+            max-width: 768px;
+            margin: 0 auto;
+        }
+
+        .input-box {
+            display: flex;
+            align-items: flex-end;
+            background: var(--bg-chat);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 12px 16px;
+            transition: border-color 0.2s;
+        }
+
+        .input-box:focus-within {
+            border-color: var(--accent);
+        }
+
+        .input-box textarea {
+            flex: 1;
+            background: none;
+            border: none;
+            outline: none;
+            color: var(--text-primary);
+            font-size: 15px;
+            font-family: inherit;
+            resize: none;
+            max-height: 150px;
+            line-height: 1.5;
+        }
+
+        .input-box textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        .send-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 8px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover {
+            background: var(--accent-hover);
+        }
+
+        .send-btn:disabled {
+            background: var(--border);
+            cursor: not-allowed;
+        }
+
+        .send-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .input-footer {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .suggestions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚡ Power Electronics AI</h1>
+        <span class="model-badge">Qwen3 1.7B · CPU</span>
+    </div>
+
+    <div class="chat-container" id="chatContainer">
+        <div class="message-wrapper" id="messageWrapper">
+            <div class="welcome" id="welcomeScreen">
+                <div class="welcome-icon">⚡</div>
+                <h2>Power Electronics Assistant</h2>
+                <p>Ask questions about DC-DC converters, switching topologies, control systems, and more from Erickson & Maksimovic's textbook.</p>
+                <div class="suggestions">
+                    <div class="suggestion-chip" onclick="askSuggestion('Explain the steady-state operation of a buck converter')">
+                        <div class="chip-title">Buck Converter</div>
+                        <div class="chip-text">Explain the steady-state operation of a buck converter</div>
+                    </div>
+                    <div class="suggestion-chip" onclick="askSuggestion('What is the principle of inductor volt-second balance?')">
+                        <div class="chip-title">Volt-Second Balance</div>
+                        <div class="chip-text">What is the principle of inductor volt-second balance?</div>
+                    </div>
+                    <div class="suggestion-chip" onclick="askSuggestion('Derive the conversion ratio of a boost converter')">
+                        <div class="chip-title">Boost Converter</div>
+                        <div class="chip-text">Derive the conversion ratio of a boost converter</div>
+                    </div>
+                    <div class="suggestion-chip" onclick="askSuggestion('What is a switching converter and how does it process power?')">
+                        <div class="chip-title">Power Processing</div>
+                        <div class="chip-text">What is a switching converter and how does it process power?</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="input-area">
+        <div class="input-wrapper">
+            <div class="input-box">
+                <textarea
+                    id="queryInput"
+                    placeholder="Ask about power electronics..."
+                    rows="1"
+                    onkeydown="handleKeydown(event)"
+                    oninput="autoResize(this)"
+                ></textarea>
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="input-footer">
+                Answers sourced exclusively from "Fundamentals of Power Electronics" · Erickson & Maksimovic, 2nd Edition
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chatContainer');
+        const messageWrapper = document.getElementById('messageWrapper');
+        const queryInput = document.getElementById('queryInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        let isProcessing = false;
+        let loadingStartTime = null;
+        let loadingInterval = null;
+
+        function autoResize(el) {
+            el.style.height = 'auto';
+            el.style.height = Math.min(el.scrollHeight, 150) + 'px';
+        }
+
+        function handleKeydown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function askSuggestion(text) {
+            queryInput.value = text;
+            sendMessage();
+        }
+
+        function scrollToBottom() {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function hideWelcome() {
+            if (welcomeScreen) {
+                welcomeScreen.style.display = 'none';
+            }
+        }
+
+        function addUserMessage(text) {
+            hideWelcome();
+            const msg = document.createElement('div');
+            msg.className = 'message';
+            msg.innerHTML = `
+                <div class="message-avatar user">U</div>
+                <div class="message-content"><p>${escapeHtml(text)}</p></div>
+            `;
+            messageWrapper.appendChild(msg);
+            scrollToBottom();
+        }
+
+        function addLoadingMessage() {
+            loadingStartTime = Date.now();
+            const msg = document.createElement('div');
+            msg.className = 'message';
+            msg.id = 'loadingMsg';
+            msg.innerHTML = `
+                <div class="message-avatar assistant">⚡</div>
+                <div class="message-content">
+                    <div class="loading-indicator">
+                        <div class="loading-spinner"></div>
+                        <span class="loading-text" id="loadingText">Searching textbook...</span>
+                    </div>
+                </div>
+            `;
+            messageWrapper.appendChild(msg);
+            scrollToBottom();
+
+            // Update loading text over time
+            loadingInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - loadingStartTime) / 1000);
+                const textEl = document.getElementById('loadingText');
+                if (!textEl) { clearInterval(loadingInterval); return; }
+
+                if (elapsed < 3) {
+                    textEl.textContent = 'Searching textbook...';
+                } else if (elapsed < 8) {
+                    textEl.textContent = `Generating answer... (${elapsed}s)`;
+                } else if (elapsed < 20) {
+                    textEl.textContent = `Still thinking on CPU... (${elapsed}s)`;
+                } else if (elapsed < 45) {
+                    textEl.textContent = `Almost there, CPU inference takes time... (${elapsed}s)`;
+                } else {
+                    textEl.textContent = `Working hard on this one... (${elapsed}s)`;
+                }
+            }, 1000);
+        }
+
+        function removeLoading() {
+            if (loadingInterval) clearInterval(loadingInterval);
+            const el = document.getElementById('loadingMsg');
+            if (el) el.remove();
+        }
+
+        function addAssistantMessage(answer, sources, meta) {
+            const msg = document.createElement('div');
+            msg.className = 'message';
+
+            // Format the answer text nicely
+            let formattedAnswer = formatAnswer(answer);
+
+            // Build sources HTML
+            let sourcesHtml = '';
+            if (sources && sources.length > 0) {
+                sourcesHtml = '<div class="sources"><span class="sources-label">📖 Sources:</span>';
+                sources.forEach(s => {
+                    sourcesHtml += `<span class="source-badge">${s}</span>`;
+                });
+                sourcesHtml += '</div>';
+            }
+
+            // Build meta HTML
+            let metaHtml = '';
+            if (meta && meta.generation_time > 0) {
+                metaHtml = `<div class="meta-info">⏱ Retrieved in ${meta.retrieval_time}s · Generated in ${meta.generation_time}s · Relevance: ${(meta.relevance * 100).toFixed(1)}%</div>`;
+            }
+
+            msg.innerHTML = `
+                <div class="message-avatar assistant">⚡</div>
+                <div class="message-content">
+                    ${formattedAnswer}
+                    ${sourcesHtml}
+                    ${metaHtml}
+                </div>
+            `;
+            messageWrapper.appendChild(msg);
+            scrollToBottom();
+        }
+
+        function formatAnswer(text) {
+            // Split into paragraphs and format
+            const lines = text.split('\n');
+            let html = '';
+            let currentParagraph = '';
+
+            for (const line of lines) {
+                const trimmed = line.trim();
+                if (trimmed === '') {
+                    if (currentParagraph) {
+                        html += `<p>${currentParagraph}</p>`;
+                        currentParagraph = '';
+                    }
+                } else {
+                    if (currentParagraph) {
+                        currentParagraph += '<br>' + escapeHtml(trimmed);
+                    } else {
+                        currentParagraph = escapeHtml(trimmed);
+                    }
+                }
+            }
+            if (currentParagraph) {
+                html += `<p>${currentParagraph}</p>`;
+            }
+
+            return html || `<p>${escapeHtml(text)}</p>`;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function sendMessage() {
+            if (isProcessing) return;
+
+            const query = queryInput.value.trim();
+            if (!query) return;
+
+            isProcessing = true;
+            sendBtn.disabled = true;
+            queryInput.value = '';
+            queryInput.style.height = 'auto';
+
+            addUserMessage(query);
+            addLoadingMessage();
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+
+                const data = await response.json();
+                removeLoading();
+
+                if (data.error) {
+                    addAssistantMessage(data.error, [], null);
+                } else {
+                    const meta = data.status === 'success' ? {
+                        retrieval_time: data.retrieval_time,
+                        generation_time: data.generation_time,
+                        relevance: data.relevance
+                    } : null;
+                    addAssistantMessage(data.answer, data.sources, meta);
+                }
+            } catch (err) {
+                removeLoading();
+                addAssistantMessage('Unable to connect to the server. Please make sure the backend is running.', [], null);
+            }
+
+            isProcessing = false;
+            sendBtn.disabled = false;
+            queryInput.focus();
+        }
+    </script>
+</body>
+</html>
